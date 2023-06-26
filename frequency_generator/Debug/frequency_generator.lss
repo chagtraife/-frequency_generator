@@ -3,29 +3,31 @@ frequency_generator.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .text         0000007c  00000000  00000000  00000054  2**1
+  0 .text         000001ae  00000000  00000000  00000094  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  1 .data         00000000  00800060  00800060  000000d0  2**0
+  1 .data         00000018  00800060  000001ae  00000242  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  2 .comment      00000030  00000000  00000000  000000d0  2**0
+  2 .bss          00000006  00800078  00800078  0000025a  2**0
+                  ALLOC
+  3 .comment      00000030  00000000  00000000  0000025a  2**0
                   CONTENTS, READONLY
-  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000100  2**2
+  4 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  0000028c  2**2
                   CONTENTS, READONLY
-  4 .debug_aranges 00000030  00000000  00000000  0000013c  2**0
+  5 .debug_aranges 00000088  00000000  00000000  000002c8  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .debug_info   00000568  00000000  00000000  0000016c  2**0
+  6 .debug_info   000007d1  00000000  00000000  00000350  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_abbrev 000004e2  00000000  00000000  000006d4  2**0
+  7 .debug_abbrev 000005c2  00000000  00000000  00000b21  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_line   000001a1  00000000  00000000  00000bb6  2**0
+  8 .debug_line   0000040f  00000000  00000000  000010e3  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_frame  00000064  00000000  00000000  00000d58  2**2
+  9 .debug_frame  00000148  00000000  00000000  000014f4  2**2
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_str    0000033e  00000000  00000000  00000dbc  2**0
+ 10 .debug_str    000004ef  00000000  00000000  0000163c  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_loc    00000063  00000000  00000000  000010fa  2**0
+ 11 .debug_loc    00000141  00000000  00000000  00001b2b  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_ranges 00000020  00000000  00000000  0000115d  2**0
+ 12 .debug_ranges 00000078  00000000  00000000  00001c6c  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -34,13 +36,13 @@ Disassembly of section .text:
    0:	12 c0       	rjmp	.+36     	; 0x26 <__ctors_end>
    2:	2c c0       	rjmp	.+88     	; 0x5c <__bad_interrupt>
    4:	2b c0       	rjmp	.+86     	; 0x5c <__bad_interrupt>
-   6:	2a c0       	rjmp	.+84     	; 0x5c <__bad_interrupt>
+   6:	c7 c0       	rjmp	.+398    	; 0x196 <__vector_3>
    8:	29 c0       	rjmp	.+82     	; 0x5c <__bad_interrupt>
    a:	28 c0       	rjmp	.+80     	; 0x5c <__bad_interrupt>
    c:	27 c0       	rjmp	.+78     	; 0x5c <__bad_interrupt>
    e:	26 c0       	rjmp	.+76     	; 0x5c <__bad_interrupt>
   10:	25 c0       	rjmp	.+74     	; 0x5c <__bad_interrupt>
-  12:	24 c0       	rjmp	.+72     	; 0x5c <__bad_interrupt>
+  12:	9e c0       	rjmp	.+316    	; 0x150 <__vector_9>
   14:	23 c0       	rjmp	.+70     	; 0x5c <__bad_interrupt>
   16:	22 c0       	rjmp	.+68     	; 0x5c <__bad_interrupt>
   18:	21 c0       	rjmp	.+66     	; 0x5c <__bad_interrupt>
@@ -63,18 +65,18 @@ Disassembly of section .text:
   32:	10 e0       	ldi	r17, 0x00	; 0
   34:	a0 e6       	ldi	r26, 0x60	; 96
   36:	b0 e0       	ldi	r27, 0x00	; 0
-  38:	ec e7       	ldi	r30, 0x7C	; 124
-  3a:	f0 e0       	ldi	r31, 0x00	; 0
+  38:	ee ea       	ldi	r30, 0xAE	; 174
+  3a:	f1 e0       	ldi	r31, 0x01	; 1
   3c:	02 c0       	rjmp	.+4      	; 0x42 <__SREG__+0x3>
   3e:	05 90       	lpm	r0, Z+
   40:	0d 92       	st	X+, r0
-  42:	a0 36       	cpi	r26, 0x60	; 96
+  42:	a8 37       	cpi	r26, 0x78	; 120
   44:	b1 07       	cpc	r27, r17
   46:	d9 f7       	brne	.-10     	; 0x3e <__SP_H__>
 
 00000048 <__do_clear_bss>:
   48:	20 e0       	ldi	r18, 0x00	; 0
-  4a:	a0 e6       	ldi	r26, 0x60	; 96
+  4a:	a8 e7       	ldi	r26, 0x78	; 120
   4c:	b0 e0       	ldi	r27, 0x00	; 0
   4e:	01 c0       	rjmp	.+2      	; 0x52 <.do_clear_bss_start>
 
@@ -82,53 +84,197 @@ Disassembly of section .text:
   50:	1d 92       	st	X+, r1
 
 00000052 <.do_clear_bss_start>:
-  52:	a0 36       	cpi	r26, 0x60	; 96
+  52:	ae 37       	cpi	r26, 0x7E	; 126
   54:	b2 07       	cpc	r27, r18
   56:	e1 f7       	brne	.-8      	; 0x50 <.do_clear_bss_loop>
-  58:	09 d0       	rcall	.+18     	; 0x6c <main>
-  5a:	0e c0       	rjmp	.+28     	; 0x78 <_exit>
+  58:	12 d0       	rcall	.+36     	; 0x7e <main>
+  5a:	a7 c0       	rjmp	.+334    	; 0x1aa <_exit>
 
 0000005c <__bad_interrupt>:
   5c:	d1 cf       	rjmp	.-94     	; 0x0 <__vectors>
 
 0000005e <_Z8init_TC0v>:
-#define TIMER0_PRESCALER      (1 << CS02) | (1 << CS00)
-
-
-void init_TC0(void)
-{
-	TIMSK |= (1 << TOIE0);        // interrupt enable - here overflow
+		maxRange = 100;
+	} else if (RANGE_2_PIN)
+	{
+		maxRange = 10;
+	} else {
+		maxRange = 1;
   5e:	89 b7       	in	r24, 0x39	; 57
   60:	81 60       	ori	r24, 0x01	; 1
   62:	89 bf       	out	0x39, r24	; 57
-	TCCR0 |= TIMER0_PRESCALER;    // use defined prescaler value
   64:	83 b7       	in	r24, 0x33	; 51
-  66:	85 60       	ori	r24, 0x05	; 5
+  66:	83 60       	ori	r24, 0x03	; 3
   68:	83 bf       	out	0x33, r24	; 51
   6a:	08 95       	ret
 
-0000006c <main>:
-
-int main(void)
-{
-	
-	//set RB5 as output
-	DDRB |= 1 << DDRB5;
+0000006c <_Z9init_GPIOv>:
   6c:	87 b3       	in	r24, 0x17	; 23
-  6e:	80 62       	ori	r24, 0x20	; 32
+  6e:	82 60       	ori	r24, 0x02	; 2
   70:	87 bb       	out	0x17, r24	; 23
-	    
-	//call TMR0 initialization function
-	init_TC0();
-  72:	f5 df       	rcall	.-22     	; 0x5e <_Z8init_TC0v>
-	    
-	//enable interrupt
-	sei();
-  74:	78 94       	sei
-  76:	ff cf       	rjmp	.-2      	; 0x76 <main+0xa>
+  72:	84 b3       	in	r24, 0x14	; 20
+  74:	8f 60       	ori	r24, 0x0F	; 15
+  76:	84 bb       	out	0x14, r24	; 20
+  78:	8f ef       	ldi	r24, 0xFF	; 255
+  7a:	81 bb       	out	0x11, r24	; 17
+  7c:	08 95       	ret
 
-00000078 <_exit>:
-  78:	f8 94       	cli
+0000007e <main>:
+  7e:	f6 df       	rcall	.-20     	; 0x6c <_Z9init_GPIOv>
+  80:	ee df       	rcall	.-36     	; 0x5e <_Z8init_TC0v>
+  82:	78 94       	sei
+  84:	87 ea       	ldi	r24, 0xA7	; 167
+  86:	91 e6       	ldi	r25, 0x61	; 97
+  88:	01 97       	sbiw	r24, 0x01	; 1
+  8a:	f1 f7       	brne	.-4      	; 0x88 <main+0xa>
+  8c:	00 c0       	rjmp	.+0      	; 0x8e <main+0x10>
+  8e:	00 00       	nop
+  90:	f9 cf       	rjmp	.-14     	; 0x84 <main+0x6>
 
-0000007a <__stop_program>:
-  7a:	ff cf       	rjmp	.-2      	; 0x7a <__stop_program>
+00000092 <_Z7displayv>:
+  92:	85 b3       	in	r24, 0x15	; 21
+  94:	8f 60       	ori	r24, 0x0F	; 15
+  96:	85 bb       	out	0x15, r24	; 21
+  98:	80 91 74 00 	lds	r24, 0x0074	; 0x800074 <digitIdx>
+  9c:	90 91 75 00 	lds	r25, 0x0075	; 0x800075 <digitIdx+0x1>
+  a0:	82 30       	cpi	r24, 0x02	; 2
+  a2:	91 05       	cpc	r25, r1
+  a4:	c1 f0       	breq	.+48     	; 0xd6 <_Z7displayv+0x44>
+  a6:	18 f4       	brcc	.+6      	; 0xae <_Z7displayv+0x1c>
+  a8:	01 97       	sbiw	r24, 0x01	; 1
+  aa:	39 f0       	breq	.+14     	; 0xba <_Z7displayv+0x28>
+  ac:	3d c0       	rjmp	.+122    	; 0x128 <_Z7displayv+0x96>
+  ae:	83 30       	cpi	r24, 0x03	; 3
+  b0:	91 05       	cpc	r25, r1
+  b2:	f9 f0       	breq	.+62     	; 0xf2 <_Z7displayv+0x60>
+  b4:	04 97       	sbiw	r24, 0x04	; 4
+  b6:	59 f1       	breq	.+86     	; 0x10e <_Z7displayv+0x7c>
+  b8:	37 c0       	rjmp	.+110    	; 0x128 <_Z7displayv+0x96>
+  ba:	e0 91 7c 00 	lds	r30, 0x007C	; 0x80007c <digitVal_1>
+  be:	f0 91 7d 00 	lds	r31, 0x007D	; 0x80007d <digitVal_1+0x1>
+  c2:	ee 0f       	add	r30, r30
+  c4:	ff 1f       	adc	r31, r31
+  c6:	e0 5a       	subi	r30, 0xA0	; 160
+  c8:	ff 4f       	sbci	r31, 0xFF	; 255
+  ca:	80 81       	ld	r24, Z
+  cc:	82 bb       	out	0x12, r24	; 18
+  ce:	85 b3       	in	r24, 0x15	; 21
+  d0:	87 7f       	andi	r24, 0xF7	; 247
+  d2:	85 bb       	out	0x15, r24	; 21
+  d4:	29 c0       	rjmp	.+82     	; 0x128 <_Z7displayv+0x96>
+  d6:	e0 91 7a 00 	lds	r30, 0x007A	; 0x80007a <digitVal_2>
+  da:	f0 91 7b 00 	lds	r31, 0x007B	; 0x80007b <digitVal_2+0x1>
+  de:	ee 0f       	add	r30, r30
+  e0:	ff 1f       	adc	r31, r31
+  e2:	e0 5a       	subi	r30, 0xA0	; 160
+  e4:	ff 4f       	sbci	r31, 0xFF	; 255
+  e6:	80 81       	ld	r24, Z
+  e8:	82 bb       	out	0x12, r24	; 18
+  ea:	85 b3       	in	r24, 0x15	; 21
+  ec:	8b 7f       	andi	r24, 0xFB	; 251
+  ee:	85 bb       	out	0x15, r24	; 21
+  f0:	1b c0       	rjmp	.+54     	; 0x128 <_Z7displayv+0x96>
+  f2:	e0 91 78 00 	lds	r30, 0x0078	; 0x800078 <__data_end>
+  f6:	f0 91 79 00 	lds	r31, 0x0079	; 0x800079 <__data_end+0x1>
+  fa:	ee 0f       	add	r30, r30
+  fc:	ff 1f       	adc	r31, r31
+  fe:	e0 5a       	subi	r30, 0xA0	; 160
+ 100:	ff 4f       	sbci	r31, 0xFF	; 255
+ 102:	80 81       	ld	r24, Z
+ 104:	82 bb       	out	0x12, r24	; 18
+ 106:	85 b3       	in	r24, 0x15	; 21
+ 108:	8d 7f       	andi	r24, 0xFD	; 253
+ 10a:	85 bb       	out	0x15, r24	; 21
+ 10c:	0d c0       	rjmp	.+26     	; 0x128 <_Z7displayv+0x96>
+ 10e:	e0 91 76 00 	lds	r30, 0x0076	; 0x800076 <digitVal_4>
+ 112:	f0 91 77 00 	lds	r31, 0x0077	; 0x800077 <digitVal_4+0x1>
+ 116:	ee 0f       	add	r30, r30
+ 118:	ff 1f       	adc	r31, r31
+ 11a:	e0 5a       	subi	r30, 0xA0	; 160
+ 11c:	ff 4f       	sbci	r31, 0xFF	; 255
+ 11e:	80 81       	ld	r24, Z
+ 120:	82 bb       	out	0x12, r24	; 18
+ 122:	85 b3       	in	r24, 0x15	; 21
+ 124:	8e 7f       	andi	r24, 0xFE	; 254
+ 126:	85 bb       	out	0x15, r24	; 21
+ 128:	80 91 74 00 	lds	r24, 0x0074	; 0x800074 <digitIdx>
+ 12c:	90 91 75 00 	lds	r25, 0x0075	; 0x800075 <digitIdx+0x1>
+ 130:	84 30       	cpi	r24, 0x04	; 4
+ 132:	91 05       	cpc	r25, r1
+ 134:	39 f4       	brne	.+14     	; 0x144 <_Z7displayv+0xb2>
+ 136:	81 e0       	ldi	r24, 0x01	; 1
+ 138:	90 e0       	ldi	r25, 0x00	; 0
+ 13a:	90 93 75 00 	sts	0x0075, r25	; 0x800075 <digitIdx+0x1>
+ 13e:	80 93 74 00 	sts	0x0074, r24	; 0x800074 <digitIdx>
+ 142:	08 95       	ret
+ 144:	01 96       	adiw	r24, 0x01	; 1
+ 146:	90 93 75 00 	sts	0x0075, r25	; 0x800075 <digitIdx+0x1>
+ 14a:	80 93 74 00 	sts	0x0074, r24	; 0x800074 <digitIdx>
+ 14e:	08 95       	ret
+
+00000150 <__vector_9>:
+	}
+}
+
+ISR (TIMER0_OVF_vect)
+{
+ 150:	1f 92       	push	r1
+ 152:	0f 92       	push	r0
+ 154:	0f b6       	in	r0, 0x3f	; 63
+ 156:	0f 92       	push	r0
+ 158:	11 24       	eor	r1, r1
+ 15a:	2f 93       	push	r18
+ 15c:	3f 93       	push	r19
+ 15e:	4f 93       	push	r20
+ 160:	5f 93       	push	r21
+ 162:	6f 93       	push	r22
+ 164:	7f 93       	push	r23
+ 166:	8f 93       	push	r24
+ 168:	9f 93       	push	r25
+ 16a:	af 93       	push	r26
+ 16c:	bf 93       	push	r27
+ 16e:	ef 93       	push	r30
+ 170:	ff 93       	push	r31
+	display();
+ 172:	8f df       	rcall	.-226    	; 0x92 <_Z7displayv>
+}
+ 174:	ff 91       	pop	r31
+ 176:	ef 91       	pop	r30
+ 178:	bf 91       	pop	r27
+ 17a:	af 91       	pop	r26
+ 17c:	9f 91       	pop	r25
+ 17e:	8f 91       	pop	r24
+ 180:	7f 91       	pop	r23
+ 182:	6f 91       	pop	r22
+ 184:	5f 91       	pop	r21
+ 186:	4f 91       	pop	r20
+ 188:	3f 91       	pop	r19
+ 18a:	2f 91       	pop	r18
+ 18c:	0f 90       	pop	r0
+ 18e:	0f be       	out	0x3f, r0	; 63
+ 190:	0f 90       	pop	r0
+ 192:	1f 90       	pop	r1
+ 194:	18 95       	reti
+
+00000196 <__vector_3>:
+
+ISR (TIMER2_COMP_vect)
+{
+ 196:	1f 92       	push	r1
+ 198:	0f 92       	push	r0
+ 19a:	0f b6       	in	r0, 0x3f	; 63
+ 19c:	0f 92       	push	r0
+ 19e:	11 24       	eor	r1, r1
+	pulseOutput();
+}
+ 1a0:	0f 90       	pop	r0
+ 1a2:	0f be       	out	0x3f, r0	; 63
+ 1a4:	0f 90       	pop	r0
+ 1a6:	1f 90       	pop	r1
+ 1a8:	18 95       	reti
+
+000001aa <_exit>:
+ 1aa:	f8 94       	cli
+
+000001ac <__stop_program>:
+ 1ac:	ff cf       	rjmp	.-2      	; 0x1ac <__stop_program>
