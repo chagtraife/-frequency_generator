@@ -70,7 +70,7 @@ int main(void)
 {
 	init_GPIO();
 	init_TC0(); //init timer1 for display
-	init_TC2(); //init timer for pulse output
+	init_TC1(); //init timer for pulse output
 	    
 	//enable interrupt
 	sei();
@@ -89,8 +89,20 @@ void init_TC0(void)
 	TCCR0 |= TIMER0_PRESCALER;    // use defined prescaler value
 }
 
-void init_TC2(void)
+void init_TC1(void)
 {
+	// set PWM for 50% duty cycle @ 10bit
+	OCR1A = 0x01FF;
+	// timer value
+	TCNT1H = 0x00;
+	TCNT1L = 0x00;
+		
+	TCCR1A |= (1 << COM1A1);    // set none-inverting mode
+	TCCR1A |= (1 << WGM11) | (1 << WGM10);    // set 10bit phase corrected PWM Mode
+	
+	//TCCR1B |= (1 << CS11);    // set prescaler to 8 and starts PWM
+	
+
 }
 
 void init_GPIO(void)
@@ -152,7 +164,7 @@ void setDisplayNumber(unsigned int number)
 
 void pulseOutput(void)
 {
-	
+	PORTB ^= 1<<PORTB1;
 }
 
 void increaseFreq(void)

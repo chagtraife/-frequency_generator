@@ -475,10 +475,10 @@ END GROUP
  .debug_abbrev  0x00000000      0x44e C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.7.374/gcc/dev/atmega8a/avr4/crtatmega8a.o
  .debug_abbrev  0x0000044e      0x174 main.o
 
-.debug_line     0x00000000      0x40f
+.debug_line     0x00000000      0x410
  *(.debug_line .debug_line.* .debug_line_end)
  .debug_line    0x00000000      0x10a C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.7.374/gcc/dev/atmega8a/avr4/crtatmega8a.o
- .debug_line    0x0000010a      0x305 main.o
+ .debug_line    0x0000010a      0x306 main.o
 
 .debug_frame    0x00000000      0x148
  *(.debug_frame)
