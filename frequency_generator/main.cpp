@@ -9,11 +9,11 @@
 #include <util/delay.h> 
 #include <avr/interrupt.h>
 
-#define DOWN_PIN     ((PORTC & _BV(PC5)) >> PC5)//PORTC.5
-#define UP_PIN       ((PORTC & _BV(PC4)) >> PC4)//PORTC.4
-#define REST_PIN     ((PORTB & _BV(PB0)) >> PB0)//PORTB.0
-#define RANGE_1_PIN  ((PORTB & _BV(PB3)) >> PB3)//PORTB.3
-#define RANGE_2_PIN  ((PORTB & _BV(PB4)) >> PB4)//PORTB.4
+#define isDownPress  ((PINC & (1<<PINC5)) == 0)
+#define isUpPress    ((PINC & (1<<PINC4)) == 0)
+#define isRestPress  ((PINB & (1<<PINB0)) == 0)
+#define RANGE_1      ((PINB & (1<<PINB3)) == 0)
+#define RANGE_2      ((PINB & (1<<PINB4)) == 0)
 
 #define PWM_POUT    DDRB1
 #define LED7A       DDRD4
@@ -33,38 +33,42 @@
 #define TIMER0_PRESCALER      (1 << CS01) | (1 << CS00) // clkI/O/64 (From prescaler)
 
 // global variable define
-unsigned int freq = 0;
-unsigned int maxRange = 0;
-unsigned int displayNumber, digitVal_1, digitVal_2, digitVal_3, digitVal_4 = 9;
-unsigned int digitIdx = 1; // range in 1-4
+unsigned int maxRange = 1000;
+unsigned int minRange = 100;
+unsigned int freq = 100;
+unsigned int factor = 1;
+uint8_t digitVal_1, digitVal_2, digitVal_3, digitVal_4 = 0;
+uint8_t pointIdx = 0;
+uint8_t digitIdx = 1; // range in 1-4
 /*
     7 6 5 4 3 2 1 0
     DP C B A F G D E
-    0   1 0 0 0 0 1 0 0  -> 0x84
-    1	1 0 0 1 1 1 1 1  -> 0x9F
-    2   1 1 0 0 1 0 0 0  -> 0xC8
-    3   1 0 0 0 1 0 0 1  -> 0x89
-    4   1 0 0 1 0 0 1 1  -> 0x93
-    5   1 0 1 0 0 0 0 1  -> 0xA1
-    6   1 0 1 0 0 0 0 0  -> 0xA0
-    7   1 0 0 0 1 1 1 1  -> 0x8F
-    8   1 0 0 0 0 0 0 0  -> 0x80
-    9   1 0 0 0 0 0 0 1  -> 0x81
+0   1 0 0 0 0 1 0 0  -> 0x84
+1	1 0 0 1 1 1 1 1  -> 0x9F
+2   1 1 0 0 1 0 0 0  -> 0xC8
+3   1 0 0 0 1 0 0 1  -> 0x89
+4   1 0 0 1 0 0 1 1  -> 0x93
+5   1 0 1 0 0 0 0 1  -> 0xA1
+6   1 0 1 0 0 0 0 0  -> 0xA0
+7   1 0 0 0 1 1 1 1  -> 0x8F
+8   1 0 0 0 0 0 0 0  -> 0x80
+9   1 0 0 0 0 0 0 1  -> 0x81
 */
-unsigned int led7[10] = { 0x84, 0x9F, 0xC8, 0x89, 0x93, 0xA1, 0xA0, 0x8F, 0x80, 0x81 };
+uint8_t led7[10] = { 0x84, 0x9F, 0xC8, 0x89, 0x93, 0xA1, 0xA0, 0x8F, 0x80, 0x81 };
 
 void init_TC0(void);
-void init_TC2(void);
+void init_TC1(void);
 void init_GPIO(void);
 void readButton(void);
 void display(void);
-void pulseOutput(void);
 
-void setDisplayNumber(unsigned int number);
+void setDisplay(unsigned int number, unsigned int f);
 void increaseFreq(void);
 void decreaseFreq(void);
 void resetFreq(void);
-void updateRange(void);
+void readRange(void);
+void update(void);
+void setPulse(unsigned int _freq, unsigned int _factor);
 
 int main(void)
 {
@@ -74,7 +78,9 @@ int main(void)
 	    
 	//enable interrupt
 	sei();
-		
+	
+	readRange();
+	update();
     /* Replace with your application code */
     while (1) 
     {
@@ -99,10 +105,6 @@ void init_TC1(void)
 		
 	TCCR1A |= (1 << COM1A1);    // set none-inverting mode
 	TCCR1A |= (1 << WGM11) | (1 << WGM10);    // set 10bit phase corrected PWM Mode
-	
-	//TCCR1B |= (1 << CS11);    // set prescaler to 8 and starts PWM
-	
-
 }
 
 void init_GPIO(void)
@@ -113,11 +115,74 @@ void init_GPIO(void)
 	DDRC |= 0x0F;
 	// set RDx as output
 	DDRD = 0xFF;
+	
+	//set PC4, PC5 as input
+	DDRC &= ~((1 << DDRC5) | (1 << DDRC4));
+	PORTC |= (1 << PORTC5) | (1 << PORTC4);
 }
 
 void readButton(void)
 {
+	readRange();
+	if (isDownPress) {
+		_delay_ms(50);
+		int cnt = 0;
+		bool isLongPress = false;
+		while (isDownPress && (cnt < 100)) {
+			cnt++;
+			if (cnt == 100){
+				isLongPress = true;
+			}
+			_delay_ms(50);
+		}
+		
+		if (isLongPress){
+			cnt = 0;
+			while(isDownPress) {
+				cnt++;
+				if (cnt % 10 == 0) {
+					decreaseFreq();
+				}
+				_delay_ms(50);
+			}
+		} else if(!isDownPress) {
+			decreaseFreq();
+		}
+	}
 	
+	if (isUpPress) {
+		_delay_ms(50);
+		int cnt = 0;
+		bool isLongPress = false;
+		while (isUpPress && (cnt < 100)) {
+			cnt++;
+			if (cnt == 100){
+				isLongPress = true;
+			}
+			_delay_ms(50);
+		}
+			
+		if (isLongPress){
+			cnt = 0;
+			while(isUpPress) {
+				cnt++;
+				if (cnt % 10 == 0) {
+					increaseFreq();
+				}
+				_delay_ms(50);
+			}
+			} else if(!isUpPress) {
+			increaseFreq();
+		}
+	}
+	
+	if (isRestPress) {
+		_delay_ms(50);
+		while (isRestPress){
+			_delay_ms(50);
+		}
+		resetFreq();
+	}
 }
 
 void display(void)
@@ -126,21 +191,34 @@ void display(void)
 	switch (digitIdx) {
 		case 1: {
 			PORTD = led7[digitVal_1];
+			if (pointIdx == 1){
+				PORTD &= ~(1<<PORTD7);
+			}
 			PORTC &= ~(1<<PORTC3);
 			break;
 		}
 		case 2: {
 			PORTD = led7[digitVal_2];
+			if (pointIdx == 2){
+				PORTD &= ~(1<<PORTD7);
+			}
 			PORTC &= ~(1<<PORTC2);
 			break;
 		}
 		case 3: {
 			PORTD = led7[digitVal_3];
+			if (pointIdx == 3){
+				PORTD &= ~(1<<PORTD7);
+			}
 			PORTC &= ~(1<<PORTC1);
 			break;
 		}
 		case 4: {
+			if (digitVal_4 == 10) break;
 			PORTD = led7[digitVal_4];
+			if (pointIdx == 4){
+				PORTD &= ~(1<<PORTD7);
+			}
 			PORTC &= ~(1<<PORTC0);		
 			break;
 		}
@@ -153,57 +231,95 @@ void display(void)
 	}
 }
 
-void setDisplayNumber(unsigned int number)
+void setDisplay(unsigned int number, unsigned int f)
 {
-	displayNumber = number;
-	digitVal_1 = displayNumber % 10;
-	digitVal_2 = (displayNumber /10) % 10;
-	digitVal_3 = (displayNumber /100) % 10;
-	digitVal_4 = (displayNumber /1000) % 10;
-}
-
-void pulseOutput(void)
-{
-	PORTB ^= 1<<PORTB1;
+	digitVal_1 = number % 10;
+	digitVal_2 = (number /10) % 10;
+	digitVal_3 = (number /100) % 10;
+	if ((number < 1000) && (f !=1000)){
+		digitVal_4 = 10; // mean do not display
+	} else{
+		digitVal_4 = (number /1000) % 10;
+	}
+	
+	if (f == 1){
+		pointIdx = 0;
+	} else if (f == 10) {
+		pointIdx = 2;
+	} else if (f == 100) {
+		pointIdx = 3;
+	} else if (f == 1000) {
+		pointIdx = 4;
+	}
 }
 
 void increaseFreq(void)
 {
-	freq += 10;
+	if (freq < 1000) {
+		freq += 10;
+		update();
+	}
 }
 
 void decreaseFreq(void)
 {
-	freq -= 10;
+	if (freq > 100) {
+		freq -= 10;
+		update();
+	}
 }
 
 void resetFreq(void)
 {
-	freq = 0; //min range
+	freq = minRange;
+	update();
 }
 
-void updateRange(void)
+void readRange(void)
 {
-	if (RANGE_1_PIN && RANGE_2_PIN){
-		maxRange = 1000;
-	} else if (RANGE_1_PIN)
+	unsigned int newFactor;
+	if (RANGE_1 && RANGE_2){
+		newFactor = 1000;
+	} else if (RANGE_1)
 	{
-		maxRange = 100;
-	} else if (RANGE_2_PIN)
+		newFactor = 100;
+	} else if (RANGE_2)
 	{
-		maxRange = 10;
+		newFactor = 10;
 	} else {
-		maxRange = 1;
+		newFactor = 1;
 	}
+	
+	if (newFactor != factor) {
+		unsigned int newFreq;
+		if (newFactor > factor) {
+			newFreq = freq * (newFactor / factor);
+		} else {
+			newFreq = freq * newFactor / factor;
+		}
+		
+		if ((newFreq < minRange) || (maxRange < newFreq)) {
+			newFreq = minRange;
+		}
+		freq = newFreq;
+		factor = newFactor;
+		update();
+	}
+}
+
+void update(void)
+{
+	setDisplay(freq, factor);
+	setPulse(freq, factor);
+}
+
+void setPulse(unsigned int _freq, unsigned int _factor)
+{
+	
 }
 
 ISR (TIMER0_OVF_vect)
 {
 	display();
-}
-
-ISR (TIMER2_COMP_vect)
-{
-	pulseOutput();
 }
 
