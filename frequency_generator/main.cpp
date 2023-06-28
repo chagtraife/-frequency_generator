@@ -97,20 +97,21 @@ void init_TC0(void)
 
 void init_TC1(void)
 {
-	// set PWM for 50% duty cycle @ 10bit
-	OCR1A = 0x01FF;
-	// timer value
-	TCNT1H = 0x00;
-	TCNT1L = 0x00;
+	// set freq
+	OCR1A = 0x00FF;
+	//0x01FF: 500Hz
 		
-	TCCR1A |= (1 << COM1A1);    // set none-inverting mode
-	TCCR1A |= (1 << WGM11) | (1 << WGM10);    // set 10bit phase corrected PWM Mode
+	TCCR1A |= (1 << COM1A0);    // set none-inverting mode
+	TCCR1A |= (1 << WGM11) | (1 << WGM10);    //Mode 11: PWM, Phase Correct === TOP: OCR1A === PWM_frequency = clock_speed / (2 * Prescaller_value * TOP_value )
+	TCCR1B |= (1 << WGM13);
+	
+	TCCR1B |= (1 << CS11); // set prescaler to 8 and starts PWM
 }
 
 void init_GPIO(void)
 {
 	//set RB1 as output
-	DDRB |= 1 << DDRB1;	
+	DDRB |= (1 << DDRB1);	
 	//set RC0, RC1, RC2, RC3 as output
 	DDRC |= 0x0F;
 	// set RDx as output
@@ -315,7 +316,30 @@ void update(void)
 
 void setPulse(unsigned int _freq, unsigned int _factor)
 {
-	
+	TCCR1B &= ~((1 << CS12) | (1 << CS11) | (1 << CS10));
+	// f = (8*10^6) / (4 * scale * topValue)
+	if (_factor == 1) {
+		unsigned int k = (_freq * 10) / 100;
+		unsigned int top = (20000 / k) * 10;
+		OCR1A = top;
+		TCCR1B |= (1 << CS10); //No Prescaling
+	} else if (_factor == 10) {
+		unsigned int k = (_freq * 10) / 100;
+		unsigned int top = (25000 / k) * 10;
+		OCR1A = top;
+		TCCR1B |= (1 << CS11); //Clock / 8
+		
+	} else if (_factor == 100) {
+		unsigned int k = (_freq * 10) / 100;
+		unsigned int top = (31250 / k) * 10;
+		OCR1A = top;
+		TCCR1B |= (1 << CS11) | ((1 << CS10)); //Clock / 64		
+	} else if (_factor == 1000) {
+		unsigned int k = (_freq * 10) / 100;
+		unsigned int top = (19531 / k) * 10;
+		OCR1A = top;
+		TCCR1B |= (1 << CS12) | ((1 << CS10)); //Clock / 1024
+	}
 }
 
 ISR (TIMER0_OVF_vect)
