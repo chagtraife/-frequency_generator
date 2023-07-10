@@ -45,7 +45,7 @@ uint8_t digitIdx = 1; // range in 1-4
     7 6 5 4 3 2 1 0
     DP C B A F G D E
 0   1 0 0 0 0 1 0 0  -> 0x84
-1	1 0 0 1 1 1 1 1  -> 0x9F
+1   1 0 0 1 1 1 1 1  -> 0x9F
 2   1 1 0 0 1 0 0 0  -> 0xC8
 3   1 0 0 0 1 0 0 1  -> 0x89
 4   1 0 0 1 0 0 1 1  -> 0x93
@@ -77,7 +77,6 @@ uint16_t cnt_cycle = 0;
 uint16_t time_scale = 0;
 uint16_t factor_scale = 1;
 
-
 void init_TC0(void);
 void init_TC1(void);
 void init_GPIO(void);
@@ -99,13 +98,12 @@ int main(void)
 	readRange();
 	update();
 		
-	init_TC0(); //init timer1 for display
+	init_TC0(); //init timer0 for display
 	init_TC1(); //init timer for pulse output
 	    
 	//enable interrupt
 	sei();
 	
-
     /* Replace with your application code */
     while (1) 
     {
